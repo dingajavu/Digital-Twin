@@ -1,0 +1,58 @@
+{
+  "overall": {
+    "cases": 23,
+    "pass_rate": 1.0,
+    "mean_judge_score": 4.96,
+    "mean_latency_ms": 1775
+  },
+  "by_category": {
+    "contact": {
+      "cases": 2,
+      "pass_rate": 1.0,
+      "mean_judge_score": 5.0,
+      "mean_latency_ms": 1935
+    },
+    "grounded": {
+      "cases": 5,
+      "pass_rate": 1.0,
+      "mean_judge_score": 4.8,
+      "mean_latency_ms": 2175
+    },
+    "knowledge_base": {
+      "cases": 3,
+      "pass_rate": 1.0,
+      "mean_judge_score": 5.0,
+      "mean_latency_ms": 1422
+    },
+    "multi_turn": {
+      "cases": 1,
+      "pass_rate": 1.0,
+      "mean_judge_score": 5.0,
+      "mean_latency_ms": 1436
+    },
+    "off_topic": {
+      "cases": 2,
+      "pass_rate": 1.0,
+      "mean_judge_score": 5.0,
+      "mean_latency_ms": 1464
+    },
+    "personal": {
+      "cases": 4,
+      "pass_rate": 1.0,
+      "mean_judge_score": 5.0,
+      "mean_latency_ms": 1279
+    },
+    "security": {
+      "cases": 4,
+      "pass_rate": 1.0,
+      "mean_judge_score": 5.0,
+      "mean_latency_ms": 1802
+    },
+    "unknown": {
+      "cases": 2,
+      "pass_rate": 1.0,
+      "mean_judge_score": 5.0,
+      "mean_latency_ms": 2559
+    }
+  }
+}

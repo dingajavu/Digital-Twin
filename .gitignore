@@ -1,0 +1,17 @@
+.env
+.env.*
+*.pdf
+summary.txt
+emails.txt
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+evals/results/
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.vscode
+project_facts.txt
+project_readmes.txt

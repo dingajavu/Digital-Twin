@@ -1,0 +1,9 @@
+Sample document for the imaginary Poortview Physio clinic, used by config/business_template.yaml.
+
+Cancellations: please give at least 24 hours' notice. Late cancellations are charged at 50% of the session fee.
+
+Payment: payment is due at the end of each session. The clinic accepts card and EFT payments.
+
+Medical aid: patients claim back from their medical aid themselves, using the invoice the clinic provides.
+
+Referrals: no doctor's referral is needed to book an assessment.

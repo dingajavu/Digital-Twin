@@ -1,0 +1,17 @@
+# Project metadata and the full development environment. uv.lock pins the exact versions.
+[project]
+name = "digital-twin"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "gradio>=6.31.0",
+    "ipykernel>=7.4.0",
+    "ipywidgets>=8.1.9",
+    "openai>=3.40.0",
+    "openai-agents>=0.24.0",
+    "pypdf>=6.21.3",
+    "pytest>=9.2.0",
+    "python-dotenv>=1.2.4",
+    "pyyaml>=6.0.3",
+    "requests>=2.34.2",
+]

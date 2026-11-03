@@ -1,0 +1,5 @@
+# Approved answers are stored on GitHub whihc are loaded at startup.
+# Format:
+# - question: <question>
+#   answer: <answer>
+[]

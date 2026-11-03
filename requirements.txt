@@ -1,0 +1,6 @@
+gradio>=6.31.0
+openai>=3.40.0
+pypdf>=6.21.3
+python-dotenv>=1.2.4
+pyyaml>=6.0.3
+requests>=2.34.2

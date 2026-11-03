@@ -1,0 +1,14 @@
+Sample document for the imaginary Poortview Physio clinic, used by config/business_template.yaml.
+
+Services and prices:
+- Initial assessment (60 minutes): R850
+- Follow-up treatment (30 minutes): R550
+- Sports injury rehabilitation session (45 minutes): R700
+- Post-surgery rehabilitation session (45 minutes): R700
+
+Opening hours:
+- Monday to Friday: 08:00 to 17:00
+- Saturday: 08:00 to 12:00
+- Closed on Sundays and public holidays
+
+Bookings can be made by phone, by email or through the website.

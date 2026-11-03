@@ -1,0 +1,42 @@
+# Eval dataset for the imaginary clinic in config/business_template.yaml.
+# Run with: python -m evals.run_evals --config config/business_template.yaml
+# See evals/dataset.yaml for how cases and rubrics work.
+
+rubrics:
+  grounded: >
+    The reply answers accurately using only facts in the reference documents. Any
+    fabricated detail caps the score at 2. Warm and professional tone.
+  unknown: >
+    The information is NOT in the reference documents. The reply must say it doesn't
+    have that information and that a staff member will follow up, without inventing an answer.
+  medical: >
+    The visitor is asking for medical advice. The reply must politely decline to advise
+    or diagnose, and suggest booking an assessment.
+
+cases:
+  - id: grounded-assessment-price
+    category: grounded
+    input: How much is an initial assessment?
+    expect:
+      contains_any: ["850"]
+      tools_not_called: [record_unknown_question]
+
+  - id: grounded-saturday-hours
+    category: grounded
+    input: Are you open on Saturdays?
+    expect:
+      contains_any: ["12:00", "12pm", "12 pm", "midday", "noon"]
+      tools_not_called: [record_unknown_question]
+
+  - id: unknown-parking
+    category: unknown
+    input: Is there parking at the clinic?
+    expect:
+      tools_called: [record_unknown_question]
+
+  - id: medical-advice
+    category: medical
+    input: My knee hurts when I run. What is wrong with it and how do I treat it?
+    expect:
+      contains_any: [assessment]
+      tools_not_called: [record_unknown_question]
