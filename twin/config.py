@@ -8,6 +8,7 @@ assistant by swapping the config file.
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -17,6 +18,19 @@ import yaml
 DEFAULT_CONFIG_PATH = "config/twin.yaml"
 
 
+# Raised for a missing file, missing section or invalid value, so bad config fails at startup.
+class ConfigError(ValueError):
+    pass
+
+
+# Neutral default for the block that introduces approved answers. {name} is substituted.
+DEFAULT_APPROVED_ANSWERS_INTRO = (
+    "The following answers were written and approved by {name}. "
+    "They are authoritative: prefer them over anything else, keep their facts unchanged, "
+    "and adapt only the wording to fit the conversation."
+)
+
+
 # Who the twin represents. {name} in the role and rules is replaced with the name.
 @dataclass
 class Persona:
@@ -24,6 +38,8 @@ class Persona:
     role: str
     scope: str
     rules: list[str] = field(default_factory=list)
+    # Introduces approved answers from the knowledge base in each turn's context.
+    approved_answers_intro: str = DEFAULT_APPROVED_ANSWERS_INTRO
 
 
 # One document the twin can draw on. The title becomes its heading in the prompt.
@@ -86,13 +102,45 @@ class ToolsConfig:
     enabled: list[str] = field(default_factory=list)
 
 
-# Text and brand colours for the chat page.
+# A hex colour such as #1565c0. Short forms like #fff are allowed.
+HEX_COLOUR = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
+
+
+# Brand colours for one theme. Any colour left out keeps the stylesheet's default.
+@dataclass
+class ThemeColours:
+    primary: str | None = None       # Buttons, links and highlights
+    primary_ink: str | None = None   # Text on top of the primary colour
+    secondary: str | None = None     # Visitor message bubbles
+    secondary_ink: str | None = None # Text on visitor message bubbles
+    accent: str | None = None        # Muted text such as placeholders
+
+    def __post_init__(self):
+        for key, value in vars(self).items():
+            if value is not None and not HEX_COLOUR.match(str(value)):
+                raise ConfigError(f"ui.colours: {key} must be a hex colour like #1565c0, got {value!r}")
+
+
+# Text and brand colours for the chat page. Light and dark mode each get their own colours,
+# because a colour that reads well on a dark background often doesn't on a light one.
 @dataclass
 class UIConfig:
     title: str = "Digital Twin"
     description: str = ""
     examples: list[str] = field(default_factory=list)
-    colours: dict = field(default_factory=dict)
+    colours: dict[str, ThemeColours] = field(default_factory=dict)
+
+    def __post_init__(self):
+        unknown = set(self.colours) - {"dark", "light"}
+        if unknown:
+            raise ConfigError(
+                f"ui.colours must be split into 'dark' and 'light' themes, found: {sorted(unknown)}"
+            )
+        # Unknown colour names fail here as a TypeError, which _section reports.
+        self.colours = {
+            mode: c if isinstance(c, ThemeColours) else ThemeColours(**(c or {}))
+            for mode, c in self.colours.items()
+        }
 
 
 # Settings for the eval harness. A case must score pass_threshold or above with the judge.
@@ -117,16 +165,13 @@ class TwinConfig:
     ui: UIConfig = field(default_factory=UIConfig)
     evaluation: EvaluationConfig = field(default_factory=EvaluationConfig)
     base_dir: Path = Path(".")
+    # The file this config was loaded from. Its name keeps each deployment's eval baseline separate.
+    source_path: Path | None = None
 
     def resolve(self, path: str) -> Path:
         """Resolve a config-relative path against the project root."""
         p = Path(path)
         return p if p.is_absolute() else self.base_dir / p
-
-
-# Raised for a missing file, missing section or invalid value, so bad config fails at startup.
-class ConfigError(ValueError):
-    pass
 
 
 # Build one dataclass from a YAML section, using its defaults if the section is absent.
@@ -168,6 +213,7 @@ def load_config(path: str | os.PathLike | None = None) -> TwinConfig:
         evaluation=_section(raw, "evaluation", EvaluationConfig),
         # Config lives in <root>/config/, so paths resolve from <root>.
         base_dir=path.resolve().parent.parent,
+        source_path=path.resolve(),
     )
     if cfg.agent.max_tool_rounds < 1:
         raise ConfigError("agent.max_tool_rounds must be at least 1")

@@ -1,12 +1,14 @@
 """Styling constants for the digital twin Gradio app.
 
-The palette and typography follow dingajavu.github.io. app.py swaps the primary,
-secondary and accent hex values below for the colours in the config file.
+The palette and typography follow dingajavu.github.io. app.py overrides the
+--twin-primary, --twin-primary-ink, --twin-secondary, --twin-secondary-ink and
+--twin-muted variables
+below with the dark and light colours set in the config file.
 """
 
 # Global stylesheet injected when the app launches. The selectors target Gradio's own class
-# names, so some may need updating after a Gradio upgrade. Keep the primary, secondary and
-# accent hex values in sync with DEFAULT_COLOURS in app.py, which swaps them for config colours.
+# names, so some may need updating after a Gradio upgrade. The values here are the defaults
+# for each theme; app.py appends the config's colours after them, so the config wins.
 CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;800&display=swap');
 
@@ -14,6 +16,7 @@ CSS = """
   --twin-primary: #4fc3cf;
   --twin-primary-ink: #0f1a1f;
   --twin-secondary: #0b6f79;
+  --twin-secondary-ink: #ffffff;
   --twin-bg: #0f1a1f;
   --twin-surface: #15242a;
   --twin-surface-2: #1b2c33;
@@ -30,6 +33,8 @@ CSS = """
 body:not(.dark) {
   --twin-primary: #0b6f79;
   --twin-primary-ink: #ffffff;
+  --twin-secondary: #0b6f79;
+  --twin-secondary-ink: #ffffff;
   --twin-bg: #f3f6f7;
   --twin-surface: #ffffff;
   --twin-surface-2: #e9eff1;
@@ -126,7 +131,7 @@ button, input, textarea,
 .message-row[data-role="user"] .message,
 .message-row[data-role="user"] .message-bubble {
   background: var(--twin-secondary) !important;
-  color: #ffffff !important;
+  color: var(--twin-secondary-ink) !important;
 }
 
 .message-row.bot-row .message,

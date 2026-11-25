@@ -140,7 +140,7 @@ class Twin:
     def build_messages(self, message: str, history: list[dict], matches: list[QAMatch]) -> list[dict]:
         messages = [{"role": "system", "content": self.system_prompt}]
         if matches:
-            messages.append({"role": "system", "content": format_approved_answers(matches)})
+            messages.append({"role": "system", "content": format_approved_answers(matches, self.cfg)})
         messages += sanitise_history(history, self.cfg.agent.max_history_messages)
         messages.append({"role": "user", "content": message})
         return messages

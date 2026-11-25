@@ -50,7 +50,7 @@ flowchart LR
 
 ## 1. Config-driven design
 
-All deployment choices are in `config/twin.yaml`. `config/business_template.yaml` shows the same system as an imaginary physio clinic's assistant with a different persona, documents, colours and database, and no code changes.
+All deployment choices are in `config/twin.yaml`. `config/business_template.yaml` shows the same system as an imaginary physio clinic's assistant with a different persona, documents, colours and database, and no code changes. Colours are set separately for light and dark mode under `ui.colours`, so each theme can keep readable contrast. The wording that introduces approved answers is set in `persona.approved_answers_intro`, and the eval judge names the persona from the config, so nothing in the code assumes the assistant represents a person.
 
 To switch model provider, change `llm.base_url` and `llm.model`. To add a tool, decorate a function with `@tool(...)` in `twin/tools.py` and list its name under `tools.enabled`.
 
@@ -87,8 +87,10 @@ uv run python -m evals.run_evals --no-judge           # checks only: fast and ch
 uv run python -m evals.run_evals                      # checks + judge
 uv run python -m evals.run_evals --repeats 3          # measure flakiness
 uv run python -m evals.run_evals --save-baseline      # record current quality
-uv run python -m evals.run_evals --baseline evals/baseline.json   # exit 1 if any category regressed
+uv run python -m evals.run_evals --baseline evals/baselines/twin.json   # exit 1 if any category regressed
 ```
+
+Each config file has its own baseline in `evals/baselines/`, named after the config (`twin.yaml` uses `twin.json`, `business_template.yaml` uses `business_template.json`). Evaluating or saving one deployment never compares against or overwrites another's scores. Runs compare against their own baseline automatically when it exists.
 
 Every run uses an in-memory database seeded with fixtures and a no-op notifier, so evals never touch real data or send notifications. Reports are written to `evals/results/` as Markdown and JSON.
 
@@ -126,7 +128,7 @@ The evals use the real model and read the real documents, so they need an API ke
 
 ## Deployment
 
-The live site runs on Render, using `pip install -r requirements.txt` to build and `python app.py` to start. Deploy from a private source that includes your documents, because `.gitignore` keeps them out of this repository.
+The live site runs on Render, using `pip install -r requirements.txt` to build and `python app.py` to start. Deploy from a private source that includes your documents.
 
 | Environment variable | Purpose |
 |---|---|
@@ -135,8 +137,6 @@ The live site runs on Render, using `pip install -r requirements.txt` to build a
 | `GRADIO_SERVER_NAME` | Set to `0.0.0.0`, so the host can reach the app |
 | `GRADIO_SERVER_PORT` | The port the host expects (`10000` by default on Render) |
 | `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` | The hosted database |
-
-**Why Turso:** Render's free tier wipes the disk on every deploy, so the live site keeps its data in a hosted [Turso](https://turso.tech) database. Create a libSQL database (not `--tursodb`, whose engine lacks the FTS5 search used here). With both Turso variables set, the app and `admin.py` use Turso; without them, they use the local `data/twin.db`. So with these in your local `.env`, `admin.py` works on live data, and running `app.py` locally writes to it too.
 
 `admin.py export` still writes approved answers to a YAML file you can commit as a backup, and it's loaded at startup.
 

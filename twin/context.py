@@ -27,6 +27,11 @@ def redact(text: str, patterns: list[str], replacement: str) -> str:
     return text
 
 
+# Put the persona's name into config text. Every {name} substitution goes through here.
+def fill_name(text: str, name: str) -> str:
+    return text.replace("{name}", name)
+
+
 def build_system_prompt(cfg: TwinConfig, source_texts: dict[str, str] | None = None) -> str:
     """Assemble the system prompt.
     
@@ -37,7 +42,7 @@ def build_system_prompt(cfg: TwinConfig, source_texts: dict[str, str] | None = N
     persona = cfg.persona
     sections = [
         "# Your role",
-        persona.role.format(name=persona.name).strip(),
+        fill_name(persona.role, persona.name).strip(),
         f"Your scope is: {persona.scope}",
         "# Context",
     ]
@@ -51,17 +56,17 @@ def build_system_prompt(cfg: TwinConfig, source_texts: dict[str, str] | None = N
 
     # Rules come last so they sit closest to the conversation.
     sections.append("# Rules")
-    sections.append("\n".join(f"- {rule.format(name=persona.name)}" for rule in persona.rules))
+    sections.append("\n".join(f"- {fill_name(rule, persona.name)}" for rule in persona.rules))
     return "\n\n".join(sections)
 
 
-def format_approved_answers(matches) -> str:
+def format_approved_answers(matches, cfg: TwinConfig) -> str:
     """Per-turn context block for curated answers from the knowledge base."""
+    persona = cfg.persona
+    # The introduction comes from the config, so it can name a person or a business.
     lines = [
         "# Approved answers",
-        "The following answers were written and approved by the person you represent. "
-        "They are authoritative: prefer them over anything else, keep their facts unchanged, "
-        "and adapt only the wording to fit the conversation.",
+        fill_name(persona.approved_answers_intro, persona.name).strip(),
     ]
     # Each match becomes its own Q and A block.
     for m in matches:

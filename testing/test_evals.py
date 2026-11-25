@@ -33,7 +33,7 @@ def test_kb_fixture_cases_match_threshold(cfg):
 # The template must load, build a prompt from its documents and have a valid dataset.
 def test_business_template_is_valid():
     cfg = load_config(ROOT / "config" / "business_template.yaml")
-    assert cfg.persona.name == "Poortview Physio" and cfg.ui.colours["primary"]
+    assert cfg.persona.name == "Poortview Physio" and cfg.ui.colours["light"].primary
     assert cfg.knowledge_base.db_path == "data/poortview_physio.db"
     prompt = build_system_prompt(cfg)
     assert "Services and Pricing" in prompt and "Clinic Policies" in prompt
@@ -113,4 +113,4 @@ def test_baseline_regression_detection_and_report(cfg):
     problems = compare_to_baseline(cur, base, tolerance=0.1)
     assert len(problems) == 2
     run = EvalRun("now", "m", None)
-    assert "Baseline comparison" in render_report(run, problems)
+    assert "Baseline comparison" in render_report(run, problems)

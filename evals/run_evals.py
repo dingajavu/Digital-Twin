@@ -27,7 +27,16 @@ from .judge import Judge
 
 # Reports from each run go in results/. The baseline is what later runs are compared against.
 RESULTS_DIR = Path(__file__).parent/"results"
-DEFAULT_BASELINE = Path(__file__).parent/"baseline.json"
+BASELINES_DIR = Path(__file__).parent/"baselines"
+
+
+def baseline_path_for(cfg) -> Path:
+    """Each config file gets its own baseline, named after it.
+
+    config/twin.yaml -> evals/baselines/twin.json, so evaluating or saving one
+    deployment can never compare against or overwrite another's scores."""
+    name = cfg.source_path.stem if cfg.source_path else "default"
+    return BASELINES_DIR / f"{name}.json"
 
 
 # The result of running one case once.
@@ -194,7 +203,7 @@ def main(argv: list[str] | None = None) -> int:
     judge = None
     if not args.no_judge:
         judge_llm = build_client(cfg.llm, model=cfg.evaluation.judge_model or cfg.llm.model)
-        judge = Judge(judge_llm, reference=twin.system_prompt)
+        judge = Judge(judge_llm, reference=twin.system_prompt, subject=cfg.persona.name)
 
     run = EvalRun(datetime.now().isoformat(timespec="seconds"), cfg.llm.model,
                   None if args.no_judge else (cfg.evaluation.judge_model or cfg.llm.model))
@@ -212,8 +221,9 @@ def main(argv: list[str] | None = None) -> int:
 
     summary = run.summary()
     regressions = None
-    # Compare against the saved baseline, unless this run is about to replace it.
-    baseline_path = args.baseline or (DEFAULT_BASELINE if DEFAULT_BASELINE.exists() and not args.save_baseline else None)
+    # Compare against this config's saved baseline, unless this run is about to replace it.
+    own_baseline = baseline_path_for(cfg)
+    baseline_path = args.baseline or (own_baseline if own_baseline.exists() and not args.save_baseline else None)
     if baseline_path and not baseline_path.exists():
         print(f"No baseline at {baseline_path}; skipping comparison. Create one with --save-baseline.")
         baseline_path = None
@@ -231,8 +241,9 @@ def main(argv: list[str] | None = None) -> int:
 
     # Saves this run's scores as they are, so check the report before relying on them.
     if args.save_baseline:
-        DEFAULT_BASELINE.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-        print(f"\nSaved baseline to {DEFAULT_BASELINE}")
+        own_baseline.parent.mkdir(exist_ok=True)
+        own_baseline.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+        print(f"\nSaved baseline to {own_baseline}")
     return 1 if regressions else 0
 
 

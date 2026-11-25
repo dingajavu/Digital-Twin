@@ -13,17 +13,33 @@ load_dotenv(override=True)
 # Show timestamped logs for tool calls and failures in the terminal.
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
-# styles.py ships with these default brand colours; config can override them.
-DEFAULT_COLOURS = {"primary": "#4fc3cf", "secondary": "#0b6f79", "accent": "#9db0b8"}
+# The style variable each config colour sets.
+COLOUR_VARIABLES = {
+    "primary": "--twin-primary",
+    "primary_ink": "--twin-primary-ink",
+    "secondary": "--twin-secondary",
+    "secondary_ink": "--twin-secondary-ink",
+    "accent": "--twin-muted",
+}
+# The same selectors styles.py uses for each theme. Gradio adds .dark to <body> in dark mode.
+THEME_SELECTORS = {"dark": ":root", "light": "body:not(.dark)"}
 
 
-# Swap the default brand hex values in the stylesheet for any colours set in the config.
+# Add the config's colours after the stylesheet so they override its defaults, theme by theme.
 def themed_css(colours: dict) -> str:
-    css = CSS
-    for key, default in DEFAULT_COLOURS.items():
-        if colours.get(key):
-            css = css.replace(default, colours[key])
-    return css
+    overrides = []
+    for mode, selector in THEME_SELECTORS.items():
+        theme = colours.get(mode)
+        if theme is None:
+            continue
+        lines = [
+            f"  {variable}: {getattr(theme, key)};"
+            for key, variable in COLOUR_VARIABLES.items()
+            if getattr(theme, key)
+        ]
+        if lines:
+            overrides.append(f"{selector} {{\n" + "\n".join(lines) + "\n}")
+    return CSS + ("\n/* Brand colours from the config */\n" + "\n".join(overrides) + "\n" if overrides else "")
 
 
 # Build the chat page. All visible text comes from the config so this file stays generic.
